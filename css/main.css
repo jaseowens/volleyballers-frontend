@@ -1,0 +1,27 @@
+
+html{
+    background-color: #d6d6d6;
+}
+
+.bg-lt-gray{
+    background-color: #f0f0f0;
+}
+.bg-white{
+    background-color: #fff;
+}
+
+.match-row{
+    padding: 15px;
+    font-size: 1.15rem;
+    color: black;
+}
+
+.mouse-hover{
+    cursor: pointer;
+}
+
+.lazy-load{
+    background-color: gray;
+    width: 70px;
+    height: 1.15rem;
+}
