@@ -25,22 +25,32 @@
             
             <div id="navbarBasicExample" class="navbar-menu">
                 <div class="navbar-start">
-                    <a href='/index.html' class="navbar-item">
+                    <a onclick="loadGameCardView()" class="navbar-item">
                         Home
                     </a>
                 </div>
-                <div class="navbar-end">
-                    <div id='navAccount' class="navbar-item">
-                        <div class="nav-account">
-                            <img id='navAccountImage'>
-                            <a id='login' href='/login.html' class="button is-light">
-                                Log in
-                            </a>
-                            <a id='signup' href='/signup.html' class="button">
-                                Signup
+                <div id='navAccount' class="navbar-end">
+
+                    <div class="navbar-item has-dropdown is-hoverable">
+                        <a id="account-display-name" class="navbar-link">
+                        </a>
+
+                        <div class="navbar-dropdown">
+                            <a class="navbar-item">
+                                Logout
                             </a>
                         </div>
+
                     </div>
+
+
+                    <img id='navAccountImage' class="navbar-item">
+                    <a id='login' href='/login.html' class="navbar-item button is-light">
+                        Log in
+                    </a>
+                    <a id='signup' href='/signup.html' class="navbar-item button">
+                        Signup
+                    </a>
                 </div>
         </nav>
     <div id='main-content-wrapper'>
