@@ -1,6 +1,8 @@
 //Initialize app
 window.onload = init();
 
+var apiHost = 'https://volleyballers.herokuapp.com';
+
 //Initalize function
 function init(){
     localStorage.clear();
@@ -20,17 +22,19 @@ function signup(){
     var username = document.getElementById('txtUsername').value;
     var password = document.getElementById('txtPassword').value;
     var password2 = document.getElementById('txtPassword2').value;
+    var displayName = document.getElementById('txtDisplayName').value;
     if(password != password2){
         console.log("Passwords must match");
         alert();
     } else{
         console.log("Passwords match");
         //Url with initialization params
-        fetch('http://localhost:8080/signup', {
+        fetch(`${apiHost}/signup`, {
             method: 'POST',
             body: JSON.stringify({
                 username: username,
-                password: password
+                password: password,
+                displayName: displayName
             }),
             headers: {
                 "Content-Type": 'application/json; charset=utf-8'

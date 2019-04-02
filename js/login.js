@@ -1,6 +1,8 @@
 //Initialize app
 window.onload = init();
 
+var apiHost = 'https://volleyballers.herokuapp.com';
+
 //Initalize function
 function init(){
     deleteAllCookies();
@@ -24,7 +26,7 @@ function login(){
         console.log(`logging in ${username}..`);
 
         //Url with initialization params
-        fetch('http://localhost:8080/api/authenticate', {
+        fetch(`${apiHost}/api/authenticate`, {
             method: 'POST',
             body: JSON.stringify({
                 username: username,

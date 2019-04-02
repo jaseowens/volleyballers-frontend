@@ -3,6 +3,8 @@ var playerID;
 var content;
 var player;
 
+const apiHost = 'https://volleyballers.herokuapp.com';
+
 window.onload = init();
 
 function init(){
@@ -33,7 +35,7 @@ function init(){
 
 function getPlayersGames(playerID){
     return new Promise((resolve, reject) => {
-    fetch(`http://localhost:8080/api/game/getAllGames?playerID=${playerID}`, {
+    fetch(`${apiHost}/api/game/getAllGames?playerID=${playerID}`, {
         method: 'GET',
         headers: {
             "Content-Type": 'application/json; charset=utf-8'
@@ -52,7 +54,7 @@ function getPlayersGames(playerID){
 }
 function getGameByID(gameID){
     return new Promise((resolve, reject) => {
-    fetch(`http://localhost:8080/api/game/get?gameID=${gameID}`, {
+    fetch(`${apiHost}/api/game/get?gameID=${gameID}`, {
         method: 'GET',
         headers: {
             "Content-Type": 'application/json; charset=utf-8'
@@ -71,7 +73,7 @@ function getGameByID(gameID){
 }
 function getTeamByID(teamID){
     return new Promise((resolve, reject) => {
-    fetch(`http://localhost:8080/api/team/get?teamID=${teamID}`, {
+    fetch(`${apiHost}/api/team/get?teamID=${teamID}`, {
         method: 'GET',
         headers: {
             "Content-Type": 'application/json; charset=utf-8'
@@ -90,7 +92,7 @@ function getTeamByID(teamID){
 }
 function getPlayerByID(playerID){
     return new Promise((resolve, reject) => {
-    fetch(`http://localhost:8080/api/player/get?playerID=${playerID}`, {
+    fetch(`${apiHost}/api/player/get?playerID=${playerID}`, {
         method: 'GET',
         headers: {
             "Content-Type": 'application/json; charset=utf-8'
@@ -271,7 +273,7 @@ function openGameDetailView(id, date, score, winningTeamID, winningTeamName, win
                 var pic = document.createElement('img');
                 pic.id = `${wtp[i]}-small-team-pic`
                 //var pp = document.getElementById(`${player.id}-small-team-pic`);
-                pic.src = `http://localhost:8080${player.profileImage}`;
+                pic.src = `${apiHost}${player.profileImage}`;
                 pic.classList.add('small-team-portrait');
                 pic.style.height = '30px';
                 pic.style.width = '30px';
@@ -327,7 +329,7 @@ function openGameDetailView(id, date, score, winningTeamID, winningTeamName, win
             if(player.success){
                 var pic = document.createElement('img');
                 pic.id = `${wtp[i]}-small-team-pic`;
-                pic.src = `http://localhost:8080${player.profileImage}`;
+                pic.src = `${apiHost}${player.profileImage}`;
                 pic.classList.add('small-team-portrait');
                 pic.style.height = '30px';
                 pic.style.width = '30px';
