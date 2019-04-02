@@ -1,10 +1,12 @@
 var token;
 var playerID;
 var content;
+var player;
 
 window.onload = init();
 
 function init(){
+
     //check if token exists in local storage, if so hide login and signup
     if(localStorage.getItem('token') != null){
         playerID = localStorage.getItem('user_id');
@@ -239,19 +241,162 @@ function getDataAndOpenGame(event){
 }
 function openGameDetailView(id, date, score, winningTeamID, winningTeamName, winningTeamPlayers, losingTeamID, losingTeamName, losingTeamPlayers, videoURL){
     clearContent();
-    content.innerHTML=
-    `
-    <div>
-        <p>Game ID: ${id}</p>
-        <p>Game Date: ${date}</p>
-        <p>Game Score: ${score}</p>
-        <p>Winning Team ID: ${winningTeamID}</p>
-        <p>Winning Team Name: ${winningTeamName}</p>
-        <p>Winning Team Players: ${winningTeamPlayers}</p>
-        <p>Losing Team ID: ${losingTeamID}</p>
-        <p>Losing Team Name: ${losingTeamName}</p>
-        <p>Losing Team Players: ${losingTeamPlayers}</p>
-        <p>Video URL: ${videoURL}</p>
-    </div>
-    `
+    let vidWrapper = document.createElement('div');
+    vidWrapper.id = 'yt-player-wrapper';
+    let vidSrc = getYouTubeIDFromURL(videoURL);
+    vidWrapper.innerHTML = `<iframe id='yt-player' width='100%' height='100%' src='https://www.youtube.com/embed/${vidSrc}?enablejsapi=1&modestbranding=1&autohide=1&showinfo=0&controls=0' frameborder='0'></ifram>`;
+    
+    //Video created, now create card with team titles and score
+    let titlebar = document.createElement('div');
+    titlebar.classList.add('level');
+    titlebar.classList.add('game-title-bar');
+
+    //Left team (winning team)
+    let leftTeam = document.createElement('div');
+    leftTeam.classList.add('level-item');
+    leftTeam.classList.add('team-name');
+    let leftDetailsWrapper = document.createElement('div');
+    let leftTeamName = document.createElement('div');
+    leftTeamName.id = 'team-name';
+    leftTeamName.innerText = winningTeamName;
+
+    leftDetailsWrapper.appendChild(leftTeamName);
+
+    var wtp = winningTeamPlayers.split(',');
+    for(var i = 0; i < wtp.length; i++){
+        var p = getPlayerByID(parseInt(wtp[i]));
+        p.then(player => {
+            console.log(player);
+            if(player.success){
+                var pic = document.createElement('img');
+                pic.id = `${wtp[i]}-small-team-pic`
+                //var pp = document.getElementById(`${player.id}-small-team-pic`);
+                pic.src = `http://localhost:8080${player.profileImage}`;
+                pic.classList.add('small-team-portrait');
+                pic.style.height = '30px';
+                pic.style.width = '30px';
+                if(player.displayName != null){
+                    pic.title = player.displayName;
+                } else{
+                    pic.title = player.username;
+                }
+                leftDetailsWrapper.appendChild(pic);
+            }
+        });
+    }
+    leftTeam.appendChild(leftDetailsWrapper);
+    titlebar.appendChild(leftTeam);
+
+    var array = score.split('-');
+    let scoreOne = array[0].trim();
+    let scoreTwo = array[1].trim();
+    scoreOne = parseInt(scoreOne);
+    scoreTwo = parseInt(scoreTwo);
+    let winningScore;
+    let losingScore;
+    if(scoreOne > scoreTwo){
+        winningScore = scoreOne;
+        losingScore = scoreTwo;
+    } else{
+        winningScore = scoreTwo;
+        losingScore = scoreOne;
+    }
+    let scoreElem = document.createElement('div');
+    scoreElem.classList.add('level-item');
+    scoreElem.classList.add('score');
+    scoreElem.style.fontSize = '1.25rem';
+    scoreElem.innerHTML = `<p style='color:green'>${winningScore}</p><p style='margin-left:10px;margin-right:10px;'> - <p><p style='color:red'>${losingScore}</p>`;
+    titlebar.appendChild(scoreElem);
+
+    ///Right team (losing team)
+    let rightTeam = document.createElement('div');
+    rightTeam.classList.add('level-item');
+    rightTeam.classList.add('team-name');
+    let rightDetailsWrapper = document.createElement('div');
+    let rightTeamName = document.createElement('div');
+    rightTeamName.id = 'team-name';
+    rightTeamName.innerText = losingTeamName;
+
+    rightDetailsWrapper.appendChild(rightTeamName);
+
+    var ltp = losingTeamPlayers.split(',');
+    for(var i = 0; i < ltp.length; i++){
+        var p = getPlayerByID(parseInt(ltp[i]));
+        p.then(player => {
+            console.log(player);
+            if(player.success){
+                var pic = document.createElement('img');
+                pic.id = `${wtp[i]}-small-team-pic`;
+                pic.src = `http://localhost:8080${player.profileImage}`;
+                pic.classList.add('small-team-portrait');
+                pic.style.height = '30px';
+                pic.style.width = '30px';
+                pic.title = player.displayName;
+                rightDetailsWrapper.appendChild(pic);
+            }
+        });
+    }
+    rightTeam.appendChild(rightDetailsWrapper);
+    titlebar.appendChild(rightTeam);
+
+    //Here is where the stats are created
+    let chartWrapper = document.createElement('div');
+    chartWrapper.classList.add('level');
+    chartWrapper.classList.add('game-stats-wrapper');
+
+    let faultsStats = document.createElement('canvas');
+    faultsStats.id = 'faults-stats';
+    faultsStats.classList.add('mh-100');
+    faultsStats.style.height = '100%';
+    faultsStats.style.width = '100%';
+    chartWrapper.appendChild(faultsStats);
+
+    content.appendChild(vidWrapper);
+    content.appendChild(titlebar);
+    content.appendChild(chartWrapper);
+
+        // Bar chart
+        new Chart(document.getElementById("faults-stats"), {
+            type: 'bar',
+            data: {
+            labels: ['Jase Owens','Zoe Walker','Natalie Dalton','Tyler Vaughn','Joy Walker','Thomas Cox'],
+            datasets: [
+                {
+                label: "Faults",
+                backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850","#424242"],
+                data: [1,3,2,3,0,5]
+                }
+            ]
+            },
+            options: {
+            legend: { display: false },
+            title: {
+                display: true,
+                text: 'Team Faults'
+            }
+            }
+        });
+}
+function onPlayerReady(event) {
+    event.target.playVideo();
+}
+function onPlayerStateChange(event) {
+    //event.target.playVideo();
+}
+function stopVideo() {
+    player.stopVideo();
+}
+window.onYouTubeIframeAPIReady = function() {
+    console.log('Made it');
+    player = new YT.Player('yt-player', {
+        events: {
+        'onReady': onPlayerReady
+        }
+    });
+    console.log('Made it');
+}
+function getYouTubeIDFromURL(url){
+    var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
+    var match = url.match(regExp);
+    return (match&&match[7].length==11)? match[7] : false;
 }

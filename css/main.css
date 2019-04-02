@@ -25,3 +25,47 @@ html{
     width: 70px;
     height: 1.15rem;
 }
+
+.team-name{
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: black;
+    text-align: center;
+}
+
+.game-title-bar{
+    background-color: white;
+    padding: 15px;
+    margin-top: 15px;
+    margin-left: 4rem;
+    margin-right: 4rem;
+}
+
+.small-team-portrait{
+    border-radius: 50px;
+    margin-right: 5px;
+}
+
+.mh-100{
+    min-height: 400px;
+}
+
+.game-stats-wrapper{
+    margin-left: 4rem;
+    margin-right: 4rem;
+    margin-bottom: 50px;
+    background-color: white;
+}
+
+#yt-player-wrapper{
+    height: 75vh;
+    width: 100%;
+    padding-top: 10px;
+    padding-right: 4rem;
+    padding-bottom: 10px;
+    padding-left: 4rem;
+}
+
+#main-content-wrapper{
+    margin-top: 65px;
+}
