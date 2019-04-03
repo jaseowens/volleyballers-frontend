@@ -123,16 +123,18 @@ function loadGameCardView(){
             container.classList.add('match-row');
             container.classList.add('bg-white');
             container.classList.add('mouse-hover');
-            container.style.marginLeft = '0.75rem';
-            container.style.marginRight = '0.75rem';
+            // container.style.marginLeft = '0.75rem';
+            // container.style.marginRight = '0.75rem';
             container.style.marginTop = '0.5rem';
             container.style.marginBottom = '0px';
 
             //Each individual item or row
             var gameDate = document.createElement('div');
             gameDate.classList.add('level-item');
-            let d = new Date(Date.parse(games[i].date));
-            let formatDate = `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+            let d = new Date(games[i].date);
+            console.log('date:');
+            console.log(games[i].date);
+            let formatDate = `${d.getMonth() + 1}/${d.getUTCDate()}/${d.getFullYear()}`;
             gameDate.innerHTML = `<p>${formatDate}</p>`;
 
             var details = document.createElement('div');
@@ -291,7 +293,8 @@ function openGameDetailView(id, date, score, winningTeamID, winningTeamName, win
 
     let scoreWrapper = document.createElement('div');
     scoreWrapper.style.textAlign = 'center';
-    //scoreWrapper.classList.add('level-item');
+    scoreWrapper.classList.add('level-item');
+    scoreWrapper.classList.add('is-mobile');
     //scoreWrapper.classList.add('score');
     scoreWrapper.style.fontSize = '1.25rem';
     let scores = score.split(',');
@@ -531,6 +534,7 @@ function openGameDetailView(id, date, score, winningTeamID, winningTeamName, win
     // Bar chart
     new Chart(document.getElementById("ufe-stats"), {
         type: 'bar',
+        responsive: true,
         data: {
         labels: ['Jase Owens','Natalie Dalton','Brandon Taylor','Katelyn Goodwin','Joy Walker','Jackie Cox'],
         datasets: [

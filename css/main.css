@@ -58,6 +58,17 @@ html{
     background-color: white;
 }
 
+.game-stats-wrapper > div{
+    min-height: 300px;
+}
+.game-stats-wrapper > div > canvas{
+    min-height: 300px;
+}
+
+.level-item.is-mobile{
+    flex-direction: column;
+}
+
 #yt-player-wrapper{
     height: 75vh;
     width: 100%;
@@ -69,4 +80,15 @@ html{
     margin-top: 65px;
     margin-left: 4rem;
     margin-right: 4rem;
+}
+
+@media (max-width: 767px)
+{
+    #main-content-wrapper{
+        margin-left: 0px;
+        margin-right: 0px;
+    }
+    .match-row{
+        padding: 5px;
+    }
 }
