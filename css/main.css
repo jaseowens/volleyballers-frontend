@@ -16,6 +16,11 @@ html{
     color: black;
 }
 
+.score{
+    clear: both;
+    float: left;
+}
+
 .mouse-hover{
     cursor: pointer;
 }
@@ -37,8 +42,6 @@ html{
     background-color: white;
     padding: 15px;
     margin-top: 15px;
-    margin-left: 4rem;
-    margin-right: 4rem;
 }
 
 .small-team-portrait{
@@ -51,8 +54,6 @@ html{
 }
 
 .game-stats-wrapper{
-    margin-left: 4rem;
-    margin-right: 4rem;
     margin-bottom: 50px;
     background-color: white;
 }
@@ -61,11 +62,11 @@ html{
     height: 75vh;
     width: 100%;
     padding-top: 10px;
-    padding-right: 4rem;
     padding-bottom: 10px;
-    padding-left: 4rem;
 }
 
 #main-content-wrapper{
     margin-top: 65px;
+    margin-left: 4rem;
+    margin-right: 4rem;
 }
