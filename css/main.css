@@ -90,5 +90,6 @@ html{
     }
     .match-row{
         padding: 5px;
+        font-size: 1rem;
     }
 }
