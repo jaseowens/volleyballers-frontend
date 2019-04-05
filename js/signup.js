@@ -1,7 +1,8 @@
 //Initialize app
 window.onload = init();
 
-var apiHost = 'https://volleyballers.herokuapp.com';
+//const apiHost = 'https://volleyballers.herokuapp.com';
+const apiHost = 'http://localhost:8080';
 
 //Initalize function
 function init(){

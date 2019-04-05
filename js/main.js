@@ -3,7 +3,8 @@ var playerID;
 var content;
 var player;
 
-const apiHost = 'https://volleyballers.herokuapp.com';
+//const apiHost = 'https://volleyballers.herokuapp.com';
+const apiHost = 'http://localhost:8080';
 
 window.onload = init();
 
@@ -90,6 +91,65 @@ function getTeamByID(teamID){
     });
 });
 }
+
+function getPlayersGameStats(playerID, gameID){
+    return new Promise((resolve, reject) => {
+    fetch(`${apiHost}/api/stats/get?playerID=${playerID}&gameID=${gameID}`, {
+        method: 'GET',
+        headers: {
+            "Content-Type": 'application/json; charset=utf-8'
+        }
+    })
+    .then(response => {
+        return response.json()
+    }) 
+    .then(response => {
+        resolve(response);
+    })
+    .catch(err =>{ 
+        reject(err);
+    });
+    });
+}
+function getGameStatsBasedOnType(type, gameID){
+    return new Promise((resolve, reject) => {
+    fetch(`${apiHost}/api/stats/get?type=${type}&gameID=${gameID}`, {
+        method: 'GET',
+        headers: {
+            "Content-Type": 'application/json; charset=utf-8'
+        }
+    })
+    .then(response => {
+        return response.json()
+    }) 
+    .then(response => {
+        resolve(response);
+    })
+    .catch(err =>{ 
+        reject(err);
+    });
+    });
+}
+function getPlayerNames(playerIDs){
+    return new Promise((resolve, reject) => {
+    fetch(`${apiHost}/api/player/getManyNames?playerIDs=${playerIDs}`, {
+        method: 'GET',
+        headers: {
+            "Content-Type": 'application/json; charset=utf-8'
+        }
+    })
+    .then(response => {
+        return response.json()
+    }) 
+    .then(response => {
+        resolve(response);
+    })
+    .catch(err =>{ 
+        reject(err);
+    });
+    });
+}
+
 function getPlayerByID(playerID){
     return new Promise((resolve, reject) => {
     fetch(`${apiHost}/api/player/get?playerID=${playerID}`, {
@@ -123,8 +183,6 @@ function loadGameCardView(){
             container.classList.add('match-row');
             container.classList.add('bg-white');
             container.classList.add('mouse-hover');
-            // container.style.marginLeft = '0.75rem';
-            // container.style.marginRight = '0.75rem';
             container.style.marginTop = '0.5rem';
             container.style.marginBottom = '0px';
 
@@ -245,6 +303,13 @@ function getDataAndOpenGame(event){
 }
 function openGameDetailView(id, date, score, winningTeamID, winningTeamName, winningTeamPlayers, losingTeamID, losingTeamName, losingTeamPlayers, videoURL){
     clearContent();
+    let names = getPlayerNames(winningTeamPlayers);
+    let displayNames = [];
+    names.then(players => {
+        for(var i = 0; i < players.length; i ++){
+            displayNames[i] = players[i].displayName;
+        }
+    });
     let vidWrapper = document.createElement('div');
     vidWrapper.id = 'yt-player-wrapper';
     let vidSrc = getYouTubeIDFromURL(videoURL);
@@ -358,243 +423,122 @@ function openGameDetailView(id, date, score, winningTeamID, winningTeamName, win
     chartWrapper.classList.add('is-multiline');
     chartWrapper.classList.add('game-stats-wrapper');
 
-    // start of chart block
-    let killWrapper = document.createElement('div');
-    killWrapper.classList.add('column');
-    killWrapper.classList.add('is-half');
+    var killValues = [0,0,0,0,0,0];
+    var setValues = [0,0,0,0,0,0];
+    var blockValues = [0,0,0,0,0,0];
+    var tipValues = [0,0,0,0,0,0];
+    var ufeValues = [0,0,0,0,0,0];
+    var aceValues = [0,0,0,0,0,0];
+    var digValues = [0,0,0,0,0,0];
 
-    let killStats = document.createElement('canvas');
-    killStats.id = 'kill-stats';
-    killStats.classList.add('column');
-    killWrapper.appendChild(killStats);
-    // end of chart block
-
-    // start of chart block
-    let setWrapper = document.createElement('div');
-    setWrapper.classList.add('column');
-    setWrapper.classList.add('is-half');
-
-    let setStats = document.createElement('canvas');
-    setStats.id = 'set-stats';
-    setStats.classList.add('column');
-    setWrapper.appendChild(setStats);
-    // end of chart block
-
-    // start of chart block
-    let blockWrapper = document.createElement('div');
-    blockWrapper.classList.add('column');
-    blockWrapper.classList.add('is-half');
-
-    let blockStats = document.createElement('canvas');
-    blockStats.id = 'block-stats';
-    blockStats.classList.add('column');
-    blockWrapper.appendChild(blockStats);
-    // end of chart block
-
-    // start of chart block
-    let tipWrapper = document.createElement('div');
-    tipWrapper.classList.add('column');
-    tipWrapper.classList.add('is-half');
-
-    let tipStats = document.createElement('canvas');
-    tipStats.id = 'tip-stats';
-    tipStats.classList.add('column');
-    tipWrapper.appendChild(tipStats);
-    // end of chart block
-
-    // start of chart block
-    let ufeWrapper = document.createElement('div');
-    ufeWrapper.classList.add('column');
-    ufeWrapper.classList.add('is-half');
-
-    let ufeStats = document.createElement('canvas');
-    ufeStats.id = 'ufe-stats';
-    ufeStats.classList.add('column');
-    ufeWrapper.appendChild(ufeStats);
-    // end of chart block
-
-    // start of chart block
-    let aceWrapper = document.createElement('div');
-    aceWrapper.classList.add('column');
-    aceWrapper.classList.add('is-half');
-
-    let aceStats = document.createElement('canvas');
-    aceStats.id = 'ace-stats';
-    aceStats.classList.add('column');
-    aceWrapper.appendChild(aceStats);
-    // end of chart block
-
-    // start of chart block
-    let digWrapper = document.createElement('div');
-    digWrapper.classList.add('column');
-    digWrapper.classList.add('is-half');
-
-    let digStats = document.createElement('canvas');
-    digStats.id = 'dig-stats';
-    digStats.classList.add('column');
-    digWrapper.appendChild(digStats);
-    // end of chart block
-
-    chartWrapper.appendChild(killWrapper);
-    chartWrapper.appendChild(setWrapper);
-    chartWrapper.appendChild(blockWrapper);
-    chartWrapper.appendChild(tipWrapper);
-    chartWrapper.appendChild(ufeWrapper);
-    chartWrapper.appendChild(aceWrapper);
-    chartWrapper.appendChild(digWrapper);
+    var killStats = getGameStatsBasedOnType('KILL', id);
+    killStats.then(stats => {
+        for (var j = 0; j < stats.length; j++){
+            let cPlayerID = stats[j].playerID;
+            let index = wtp.indexOf(cPlayerID.toString());
+            killValues[index] = stats[j].total;
+        }    
+        let kill = createBarChart(
+            'Dynamic Team Kills', 
+            displayNames, 
+            killValues, 
+            'Kills Truly Dynamic');
+        chartWrapper.appendChild(kill);
+    });
+    var setStats = getGameStatsBasedOnType('SET', id);
+    setStats.then(stats => {
+        for (var j = 0; j < stats.length; j++){
+            let cPlayerID = stats[j].playerID;
+            let index = wtp.indexOf(cPlayerID.toString());
+            setValues[index] = stats[j].total;
+        }    
+        let set = createBarChart(
+            'Dynamic Team Sets', 
+            ['Jase Owens','Natalie Dalton','Brandon Taylor','Katelyn Goodwin','Joy Walker','Jackie Cox'], 
+            setValues, 
+            'Sets Dynamic');
+        chartWrapper.appendChild(set);
+    });
+    var blockStats = getGameStatsBasedOnType('BLOCK', id);
+    blockStats.then(stats => {
+        for (var j = 0; j < stats.length; j++){
+            let cPlayerID = stats[j].playerID;
+            let index = wtp.indexOf(cPlayerID.toString());
+            blockValues[index] = stats[j].total;
+        }    
+        let block = createBarChart(
+            'Dynamic Team Blocks', 
+            ['Jase Owens','Natalie Dalton','Brandon Taylor','Katelyn Goodwin','Joy Walker','Jackie Cox'], 
+            blockValues, 
+            'Blocks Dynamic');
+    
+        chartWrapper.appendChild(block);
+    });
+    var tipStats = getGameStatsBasedOnType('TIP', id);
+    tipStats.then(stats => {
+        for (var j = 0; j < stats.length; j++){
+            let cPlayerID = stats[j].playerID;
+            let index = wtp.indexOf(cPlayerID.toString());
+            tipValues[index] = stats[j].total;
+        }    
+        let tip = createBarChart(
+            'Dynamic Team Tips', 
+            ['Jase Owens','Natalie Dalton','Brandon Taylor','Katelyn Goodwin','Joy Walker','Jackie Cox'], 
+            tipValues, 
+            'Tips Dynamic');
+    
+        chartWrapper.appendChild(tip);
+    });
+    var ufeStats = getGameStatsBasedOnType('UFE', id);
+    ufeStats.then(stats => {
+        for (var j = 0; j < stats.length; j++){
+            let cPlayerID = stats[j].playerID;
+            let index = wtp.indexOf(cPlayerID.toString());
+            ufeValues[index] = stats[j].total;
+        }    
+        let ufe = createBarChart(
+            'Dynamic Team Unforced Errors', 
+            ['Jase Owens','Natalie Dalton','Brandon Taylor','Katelyn Goodwin','Joy Walker','Jackie Cox'], 
+            ufeValues, 
+            'Unforced Erros Dynamic');
+    
+        chartWrapper.appendChild(ufe);
+    });
+    var aceStats = getGameStatsBasedOnType('ACE', id);
+    aceStats.then(stats => {
+        for (var j = 0; j < stats.length; j++){
+            let cPlayerID = stats[j].playerID;
+            let index = wtp.indexOf(cPlayerID.toString());
+            aceValues[index] = stats[j].total;
+        }    
+        let ace = createBarChart(
+            'Dynamic Team Aces', 
+            ['Jase Owens','Natalie Dalton','Brandon Taylor','Katelyn Goodwin','Joy Walker','Jackie Cox'], 
+            aceValues, 
+            'Aces Dynamic');
+    
+        chartWrapper.appendChild(ace);
+    });
+    var digStats = getGameStatsBasedOnType('DIG', id);
+    digStats.then(stats => {
+        for (var j = 0; j < stats.length; j++){
+            let cPlayerID = stats[j].playerID;
+            let index = wtp.indexOf(cPlayerID.toString());
+            digValues[index] = stats[j].total;
+        }    
+        let dig = createBarChart(
+            'Dynamic Team Digs', 
+            ['Jase Owens','Natalie Dalton','Brandon Taylor','Katelyn Goodwin','Joy Walker','Jackie Cox'], 
+            digValues, 
+            'Digs Dynamic');
+    
+        chartWrapper.appendChild(dig);
+    });
 
     content.appendChild(vidWrapper);
     content.appendChild(titlebar);
     content.appendChild(chartWrapper);
 
-    // Bar chart
-    new Chart(document.getElementById("kill-stats"), {
-        type: 'bar',
-        data: {
-        labels: ['Jase Owens','Natalie Dalton','Brandon Taylor','Katelyn Goodwin','Joy Walker','Jackie Cox'],
-        datasets: [
-            {
-            label: "Kills",
-            backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850","#424242"],
-            data: [1,0,0,0,1,7]
-            }
-        ]
-        },
-        options: {
-        legend: { display: false },
-        title: {
-            display: true,
-            text: 'Team Kills'
-        }
-        }
-    });
-    // Bar chart
-    new Chart(document.getElementById("set-stats"), {
-        type: 'bar',
-        data: {
-        labels: ['Jase Owens','Natalie Dalton','Brandon Taylor','Katelyn Goodwin','Joy Walker','Jackie Cox'],
-        datasets: [
-            {
-            label: "Sets",
-            backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850","#424242"],
-            data: [2,0,1,6,0,0]
-            }
-        ]
-        },
-        options: {
-        legend: { display: false },
-        title: {
-            display: true,
-            text: 'Team Sets'
-        }
-        }
-    });
-    // Bar chart
-    new Chart(document.getElementById("block-stats"), {
-        type: 'bar',
-        data: {
-        labels: ['Jase Owens','Natalie Dalton','Brandon Taylor','Katelyn Goodwin','Joy Walker','Jackie Cox'],
-        datasets: [
-            {
-            label: "Blocks",
-            backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850","#424242"],
-            data: [0,0,1,0,0,0]
-            }
-        ]
-        },
-        options: {
-        legend: { display: false },
-        title: {
-            display: true,
-            text: 'Team Blocks'
-        }
-        }
-    });
-    // Bar chart
-    new Chart(document.getElementById("tip-stats"), {
-        type: 'bar',
-        data: {
-        labels: ['Jase Owens','Natalie Dalton','Brandon Taylor','Katelyn Goodwin','Joy Walker','Jackie Cox'],
-        datasets: [
-            {
-            label: "Tips",
-            backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850","#424242"],
-            data: [0,0,0,0,1,2]
-            }
-        ]
-        },
-        options: {
-        legend: { display: false },
-        title: {
-            display: true,
-            text: 'Team Tips'
-        }
-        }
-    });
-    // Bar chart
-    new Chart(document.getElementById("ufe-stats"), {
-        type: 'bar',
-        responsive: true,
-        data: {
-        labels: ['Jase Owens','Natalie Dalton','Brandon Taylor','Katelyn Goodwin','Joy Walker','Jackie Cox'],
-        datasets: [
-            {
-            label: "Unforced Errors",
-            backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850","#424242"],
-            data: [4,5,1,2,1,15]
-            }
-        ]
-        },
-        options: {
-        legend: { display: false },
-        title: {
-            display: true,
-            text: 'Team Unforced Errors'
-        }
-        }
-    });
-    // Bar chart
-    new Chart(document.getElementById("ace-stats"), {
-        type: 'bar',
-        data: {
-        labels: ['Jase Owens','Natalie Dalton','Brandon Taylor','Katelyn Goodwin','Joy Walker','Jackie Cox'],
-        datasets: [
-            {
-            label: "Aces",
-            backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850","#424242"],
-            data: [4,3,1,1,0,2]
-            }
-        ]
-        },
-        options: {
-        legend: { display: false },
-        title: {
-            display: true,
-            text: 'Team Aces'
-        }
-        }
-    });
-    // Bar chart
-    new Chart(document.getElementById("dig-stats"), {
-        type: 'bar',
-        data: {
-        labels: ['Jase Owens','Natalie Dalton','Brandon Taylor','Katelyn Goodwin','Joy Walker','Jackie Cox'],
-        datasets: [
-            {
-            label: "Digs",
-            backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850","#424242"],
-            data: [1,4,0,2,0,0]
-            }
-        ]
-        },
-        options: {
-        legend: { display: false },
-        title: {
-            display: true,
-            text: 'Team Digs'
-        }
-        }
-    });
 }
 function onPlayerReady(event) {
     event.target.playVideo();
@@ -619,3 +563,45 @@ function getYouTubeIDFromURL(url){
     var match = url.match(regExp);
     return (match&&match[7].length==11)? match[7] : false;
 }
+
+//Title: title of chart
+//Labels: labels for data set
+//Data: data set
+//Label: text on hover 
+function createBarChart(title, labels, data, label){
+    // start of chart block
+    let wrapper = document.createElement('div');
+    wrapper.classList.add('column');
+    wrapper.classList.add('is-half');
+
+    let stats = document.createElement('canvas');
+    stats.classList.add('column');
+    wrapper.appendChild(stats);
+    // end of chart block
+
+    // Bar chart
+    new Chart(stats, {
+        type: 'bar',
+        data: {
+        labels: labels,
+        datasets: [
+            {
+            label: label,
+            backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850","#424242"],
+            data: data
+            }
+        ]
+        },
+        options: {
+        legend: { display: false },
+        title: {
+            display: true,
+            text: title
+        }
+        }
+    });
+
+    return wrapper;
+}
+    
+
