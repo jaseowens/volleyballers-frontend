@@ -526,13 +526,14 @@ function getDataAndOpenGame(event){
 }
 function openGameDetailView(id, date, score, winningTeamID, winningTeamName, winningTeamPlayers, losingTeamID, losingTeamName, losingTeamPlayers, videoURL){
     clearContent();
-    let names = getPlayerNames(winningTeamPlayers);
-    let displayNames = [];
-    names.then(players => {
-        for(var i = 0; i < players.length; i ++){
-            displayNames[i] = players[i].displayName;
-        }
-    });
+    // let names = getPlayerNames(winningTeamPlayers);
+    // let displayNames = [];
+    // names.then(players => {
+    //     for(var i = 0; i < players.length; i ++){
+    //         displayNames[i] = players[i].displayName;
+    //     }
+    //     console.log(`Display names: ${displayNames}`);
+    // });
     let vidWrapper = document.createElement('div');
     vidWrapper.id = 'yt-player-wrapper';
     let vidSrc = getYouTubeIDFromURL(videoURL);
@@ -678,51 +679,62 @@ function openGameDetailView(id, date, score, winningTeamID, winningTeamName, win
     chartWrapper.classList.add('game-stats-wrapper');
 
     var killValues = [0,0,0,0,0,0];
+    var killNames = [];
     var setValues = [0,0,0,0,0,0];
+    var setNames = [];
     var blockValues = [0,0,0,0,0,0];
+    var blockNames = [];
     var tipValues = [0,0,0,0,0,0];
+    var tipNames = [];
     var ufeValues = [0,0,0,0,0,0];
+    var ufeNames = [];
     var aceValues = [0,0,0,0,0,0];
+    var aceNames = [];
     var digValues = [0,0,0,0,0,0];
+    var digNames = [];
 
     var killStats = getGameStatsBasedOnType('KILL', id);
     killStats.then(stats => {
+        console.log('Kill stats for this game are below');
+        console.log(stats);
         for (var j = 0; j < stats.length; j++){
-            let cPlayerID = stats[j].playerID;
-            let index = wtp.indexOf(cPlayerID.toString());
-            killValues[index] = stats[j].total;
+            let cPlayerUsername = stats[j].playerUsername;
+            killNames[j] = stats[j].playerName;
+            killValues[j] = stats[j].total;
         }    
         let kill = createBarChart(
             'Dynamic Team Kills', 
-            displayNames, 
+            killNames, 
             killValues, 
             'Kills Truly Dynamic');
         chartWrapper.appendChild(kill);
     });
     var setStats = getGameStatsBasedOnType('SET', id);
     setStats.then(stats => {
+        console.log('Set stats for this game are below');
+        console.log(stats);
         for (var j = 0; j < stats.length; j++){
-            let cPlayerID = stats[j].playerID;
-            let index = wtp.indexOf(cPlayerID.toString());
-            setValues[index] = stats[j].total;
+            let cPlayerUsername = stats[j].playerUsername;
+            setNames[j] = stats[j].playerName;
+            setValues[j] = stats[j].total;
         }    
         let set = createBarChart(
             'Dynamic Team Sets', 
-            ['Jase Owens','Natalie Dalton','Brandon Taylor','Katelyn Goodwin','Joy Walker','Jackie Cox'], 
+            setNames, 
             setValues, 
-            'Sets Dynamic');
+            'Sets Truly Dynamic');
         chartWrapper.appendChild(set);
     });
     var blockStats = getGameStatsBasedOnType('BLOCK', id);
     blockStats.then(stats => {
         for (var j = 0; j < stats.length; j++){
-            let cPlayerID = stats[j].playerID;
-            let index = wtp.indexOf(cPlayerID.toString());
-            blockValues[index] = stats[j].total;
+            let cPlayerUsername = stats[j].playerUsername;
+            blockNames[j] = stats[j].playerName;
+            blockValues[j] = stats[j].total;
         }    
         let block = createBarChart(
             'Dynamic Team Blocks', 
-            ['Jase Owens','Natalie Dalton','Brandon Taylor','Katelyn Goodwin','Joy Walker','Jackie Cox'], 
+            blockNames, 
             blockValues, 
             'Blocks Dynamic');
     
@@ -731,13 +743,13 @@ function openGameDetailView(id, date, score, winningTeamID, winningTeamName, win
     var tipStats = getGameStatsBasedOnType('TIP', id);
     tipStats.then(stats => {
         for (var j = 0; j < stats.length; j++){
-            let cPlayerID = stats[j].playerID;
-            let index = wtp.indexOf(cPlayerID.toString());
-            tipValues[index] = stats[j].total;
+            let cPlayerUsername = stats[j].playerUsername;
+            tipNames[j] = stats[j].playerName;
+            tipValues[j] = stats[j].total;
         }    
         let tip = createBarChart(
             'Dynamic Team Tips', 
-            ['Jase Owens','Natalie Dalton','Brandon Taylor','Katelyn Goodwin','Joy Walker','Jackie Cox'], 
+            tipNames, 
             tipValues, 
             'Tips Dynamic');
     
@@ -746,13 +758,13 @@ function openGameDetailView(id, date, score, winningTeamID, winningTeamName, win
     var ufeStats = getGameStatsBasedOnType('UFE', id);
     ufeStats.then(stats => {
         for (var j = 0; j < stats.length; j++){
-            let cPlayerID = stats[j].playerID;
-            let index = wtp.indexOf(cPlayerID.toString());
-            ufeValues[index] = stats[j].total;
+            let cPlayerUsername = stats[j].playerUsername;
+            ufeNames[j] = stats[j].playerName;
+            ufeValues[j] = stats[j].total;
         }    
         let ufe = createBarChart(
             'Dynamic Team Unforced Errors', 
-            ['Jase Owens','Natalie Dalton','Brandon Taylor','Katelyn Goodwin','Joy Walker','Jackie Cox'], 
+            ufeNames, 
             ufeValues, 
             'Unforced Erros Dynamic');
     
@@ -761,13 +773,13 @@ function openGameDetailView(id, date, score, winningTeamID, winningTeamName, win
     var aceStats = getGameStatsBasedOnType('ACE', id);
     aceStats.then(stats => {
         for (var j = 0; j < stats.length; j++){
-            let cPlayerID = stats[j].playerID;
-            let index = wtp.indexOf(cPlayerID.toString());
-            aceValues[index] = stats[j].total;
+            let cPlayerUsername = stats[j].playerUsername;
+            aceNames[j] = stats[j].playerName;
+            aceValues[j] = stats[j].total;
         }    
         let ace = createBarChart(
             'Dynamic Team Aces', 
-            ['Jase Owens','Natalie Dalton','Brandon Taylor','Katelyn Goodwin','Joy Walker','Jackie Cox'], 
+            aceNames, 
             aceValues, 
             'Aces Dynamic');
     
@@ -776,13 +788,13 @@ function openGameDetailView(id, date, score, winningTeamID, winningTeamName, win
     var digStats = getGameStatsBasedOnType('DIG', id);
     digStats.then(stats => {
         for (var j = 0; j < stats.length; j++){
-            let cPlayerID = stats[j].playerID;
-            let index = wtp.indexOf(cPlayerID.toString());
-            digValues[index] = stats[j].total;
+            let cPlayerUsername = stats[j].playerUsername;
+            digNames[j] = stats[j].playerName;
+            digValues[j] = stats[j].total;
         }    
         let dig = createBarChart(
             'Dynamic Team Digs', 
-            ['Jase Owens','Natalie Dalton','Brandon Taylor','Katelyn Goodwin','Joy Walker','Jackie Cox'], 
+            digNames, 
             digValues, 
             'Digs Dynamic');
     
@@ -1033,29 +1045,29 @@ function updateGame(id, date, score, winningTeamID, winningTeamName, winningTeam
     });
 }
 function addStats(gameID, playerID, type, total){
-//Url with initialization params
-return new Promise(function(resolve, reject){
-    fetch(`${apiHost}/api/game/update`, {
-        method: 'POST',
-        body: JSON.stringify({
-            gameID: gameID,
-            playerID: playerID,
-            type: type,
-            total: total
-        }),
-        headers: {
-            "Content-Type": 'application/json; charset=utf-8'
-        }
-    })
-    .then(response => response.json()) 
-    .then(response => {
-        console.log(response);
-        resolve(response);
-    })
-    .catch(response =>{ 
-        console.log(response);
-        reject(response);
-    });
+    //Url with initialization params
+    return new Promise(function(resolve, reject){
+        fetch(`${apiHost}/api/game/update`, {
+            method: 'POST',
+            body: JSON.stringify({
+                gameID: gameID,
+                playerID: playerID,
+                type: type,
+                total: total
+            }),
+            headers: {
+                "Content-Type": 'application/json; charset=utf-8'
+            }
+        })
+        .then(response => response.json()) 
+        .then(response => {
+            console.log(response);
+            resolve(response);
+        })
+        .catch(response =>{ 
+            console.log(response);
+            reject(response);
+        });
     });
 }
 
