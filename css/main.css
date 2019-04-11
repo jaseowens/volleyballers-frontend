@@ -9,6 +9,15 @@ html{
 .bg-white{
     background-color: #fff;
 }
+.p-2{
+    padding: 5px;
+}
+.mt-2{
+    margin-top: 1rem;
+}
+.h-red:hover{
+    color: red;
+}
 
 .match-row{
     padding: 15px;

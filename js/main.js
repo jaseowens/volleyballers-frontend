@@ -1,5 +1,6 @@
 var token;
 var playerID;
+var playerUsername;
 var content;
 var player;
 
@@ -13,13 +14,14 @@ function init(){
     //check if token exists in local storage, if so hide login and signup
     if(localStorage.getItem('token') != null){
         playerID = localStorage.getItem('user_id');
+        playerUsername = localStorage.getItem('username');
         token = localStorage.getItem('token');
         var loginButton = document.getElementById('login');
         var signupButton = document.getElementById('signup');
         loginButton.style.display = 'none';
         signupButton.style.display = 'none';
         //Get logged in user info
-        let cPlayer = getPlayerByID(playerID);
+        let cPlayer = getPlayerByUsername(playerUsername);
         cPlayer.then(player => {
             console.log(player);
             var wrapper = document.getElementById('account-display-name');
@@ -30,13 +32,13 @@ function init(){
     }
     
     content = document.getElementById('main-content-wrapper');
+
     loadGameCardView();
-    
 }
 
-function getPlayersGames(playerID){
+function getPlayersGames(username){
     return new Promise((resolve, reject) => {
-    fetch(`${apiHost}/api/game/getAllGames?playerID=${playerID}`, {
+    fetch(`${apiHost}/api/game/getAllGames?username=${username}`, {
         method: 'GET',
         headers: {
             "Content-Type": 'application/json; charset=utf-8'
@@ -91,7 +93,82 @@ function getTeamByID(teamID){
     });
 });
 }
+function openAddGame(){
+    clearContent();
+    let createFormWrapper = document.createElement('div');
+    createFormWrapper.classList.add('bg-white');
+    createFormWrapper.classList.add('mt-2');
+    createFormWrapper.classList.add('columns');
+    createFormWrapper.classList.add('is-multiline');
 
+    let dateField = createSimpleFormInColumn("Date", "Date", "update-date", "eg. '03/03/2019'");
+    let scoreField = createSimpleFormInColumn("Score", "Score", "update-score", "eg. '25-21,25-20,15-10'");
+    let winningTeamID = createSimpleFormInColumn("Winning Team ID", "Winning Team ID", "update-winning-team-id", "eg. '5'");
+    let winningTeamName = createSimpleFormInColumn("Winning Team Name", "Winning Team Name", "update-winning-team-name", "eg. 'Volleyballers'");
+    let winningTeamPlayers = createSimpleFormInColumn("Winning Team Players", "Winning Team Players", "update-winning-team-players", "eg. '5,7,8,12,14,51'");
+    let losingTeamID = createSimpleFormInColumn("Losing Team ID", "Losing Team ID", "update-losing-team-id", "eg. '5'");
+    let losingTeamName = createSimpleFormInColumn("Losing Team Name", "Losing Team Name", "update-losing-team-name", "eg. 'Volleyballers'");
+    let losingTeamPlayers = createSimpleFormInColumn("Losing Team Players", "Losing Team Players", "update-losing-team-players", "eg. '5,7,8,12,14,51'");
+    let videoURL = createSimpleFormInColumn("Video URL","Video URL", "update-video-url","eg. https://www.youtube.com/watch?v=adfooOOa");
+
+    //Append fields
+    createFormWrapper.appendChild(dateField);
+    createFormWrapper.appendChild(scoreField);
+    createFormWrapper.appendChild(winningTeamID);
+    createFormWrapper.appendChild(winningTeamName);
+    createFormWrapper.appendChild(winningTeamPlayers);
+    createFormWrapper.appendChild(losingTeamID);
+    createFormWrapper.appendChild(losingTeamName);
+    createFormWrapper.appendChild(losingTeamPlayers);
+    createFormWrapper.appendChild(videoURL);
+    
+    let saveButton = document.createElement('a');
+    saveButton.classList.add('button');
+    saveButton.classList.add('is-medium');
+    saveButton.innerHTML = `<span class="icon is-medium"> <i class="fas fa-save"></i> </span>`;
+    saveButton.onclick = function() {
+        console.log('updating');
+        saveButton.classList.add('is-loading');
+        let uDate = document.getElementById('update-date').value;
+        let uScore = document.getElementById('update-score').value;
+        let uWinningTeamID = document.getElementById('update-winning-team-id').value;
+        let uWinningTeamName = document.getElementById('update-winning-team-name').value;
+        let uWinningTeamPlayers = document.getElementById('update-winning-team-players').value;
+        let uLosingTeamID = document.getElementById('update-losing-team-id').value;
+        let uLosingTeamName = document.getElementById('update-losing-team-name').value;
+        let uLosingTeamPlayers = document.getElementById('update-losing-team-players').value;
+        let uVideoURL = document.getElementById('update-video-url').value;
+
+        //Integer values on backend cant be passed in as "", need to change to null if empty string.
+        if(uScore == ""){
+            uScore = null;
+        }
+        if(uWinningTeamID == ""){
+            uWinningTeamID = null;
+        }
+        if(uLosingTeamID == ""){
+            uLosingTeamID = null;
+        }
+
+        let addTheGame = addGame(uDate, uScore, uWinningTeamID, uWinningTeamName, uWinningTeamPlayers, uLosingTeamID, uLosingTeamName, uLosingTeamPlayers, uVideoURL);
+        addTheGame.then(response =>{
+            getPlayersGames(playerUsername);
+        });
+    }
+
+    let cancelButton = document.createElement('a');
+    cancelButton.classList.add('button');
+    cancelButton.classList.add('is-medium');
+    cancelButton.innerHTML = `<span class="icon is-medium"> <i class="fas fa-window-close"></i> </span>`;
+    cancelButton.onclick = function() {
+        getPlayersGames(playerUsername);
+    }
+
+    //Append elements to form wrapper
+    content.appendChild(createFormWrapper);
+    content.appendChild(saveButton);
+    content.appendChild(cancelButton);
+}
 function getPlayersGameStats(playerID, gameID){
     return new Promise((resolve, reject) => {
     fetch(`${apiHost}/api/stats/get?playerID=${playerID}&gameID=${gameID}`, {
@@ -130,9 +207,9 @@ function getGameStatsBasedOnType(type, gameID){
     });
     });
 }
-function getPlayerNames(playerIDs){
+function getPlayerNames(usernames){
     return new Promise((resolve, reject) => {
-    fetch(`${apiHost}/api/player/getManyNames?playerIDs=${playerIDs}`, {
+    fetch(`${apiHost}/api/player/getManyNames?usernames=${usernames}`, {
         method: 'GET',
         headers: {
             "Content-Type": 'application/json; charset=utf-8'
@@ -149,10 +226,123 @@ function getPlayerNames(playerIDs){
     });
     });
 }
-
+function createSimpleForm(labelText, inputPlaceholder, helpText){
+    //Form
+    //---Field
+    let field = document.createElement('div');
+    field.classList.add('field');
+    //---Label
+    let label = document.createElement('label');
+    label.classList.add('label');
+    label.innerText = labelText;
+    //---Control
+    let control = document.createElement('div');
+    control.classList.add('control');
+    //--- ---Input
+    let input = document.createElement('input');
+    input.classList.add('input');
+    input.type = "text";
+    input.placeholder = inputPlaceholder;
+    control.appendChild(input);
+    //---Help Text
+    let help = document.createElement('p');
+    help.classList.add('help');
+    help.innerText = helpText;
+    //Append to field
+    field.appendChild(label);
+    field.appendChild(control);
+    field.appendChild(help);
+    return field;
+}
+function createSimpleFormInColumn(labelText, inputPlaceholder, inputID, helpText){
+    let column = document.createElement('div');
+    column.classList.add('column');
+    column.classList.add('is-half');
+    //Form
+    //---Field
+    let field = document.createElement('div');
+    field.classList.add('field');
+    //---Label
+    let label = document.createElement('label');
+    label.classList.add('label');
+    label.innerText = labelText;
+    //---Control
+    let control = document.createElement('div');
+    control.classList.add('control');
+    //--- ---Input
+    let input = document.createElement('input');
+    input.classList.add('input');
+    input.type = "text";
+    input.id = inputID;
+    input.placeholder = inputPlaceholder;
+    control.appendChild(input);
+    //---Help Text
+    let help = document.createElement('p');
+    help.classList.add('help');
+    help.innerText = helpText;
+    //Append to field
+    field.appendChild(label);
+    field.appendChild(control);
+    field.appendChild(help);
+    column.appendChild(field);
+    return column;
+}
+function createSimpleFormInColumnSetInputValue(labelText, inputValue, inputID, inputPlaceholder, helpText){
+    let column = document.createElement('div');
+    column.classList.add('column');
+    column.classList.add('is-half');
+    //Form
+    //---Field
+    let field = document.createElement('div');
+    field.classList.add('field');
+    //---Label
+    let label = document.createElement('label');
+    label.classList.add('label');
+    label.innerText = labelText;
+    //---Control
+    let control = document.createElement('div');
+    control.classList.add('control');
+    //--- ---Input
+    let input = document.createElement('input');
+    input.classList.add('input');
+    input.type = "text";
+    input.value = inputValue
+    input.id = inputID;
+    input.placeholder = inputPlaceholder;
+    control.appendChild(input);
+    //---Help Text
+    let help = document.createElement('p');
+    help.classList.add('help');
+    help.innerText = helpText;
+    //Append to field
+    field.appendChild(label);
+    field.appendChild(control);
+    field.appendChild(help);
+    column.appendChild(field);
+    return column;
+}
 function getPlayerByID(playerID){
     return new Promise((resolve, reject) => {
-    fetch(`${apiHost}/api/player/get?playerID=${playerID}`, {
+    fetch(`${apiHost}/api/player/getById?playerID=${playerID}`, {
+        method: 'GET',
+        headers: {
+            "Content-Type": 'application/json; charset=utf-8'
+        }
+    })
+    .then(response => {
+        return response.json()
+    }) 
+    .then(response => {
+        resolve(response);
+    })
+    .catch(err =>{ 
+        reject(err);
+    });
+});
+}
+function getPlayerByUsername(username){
+    return new Promise((resolve, reject) => {
+    fetch(`${apiHost}/api/player/getByUsername?username=${username}`, {
         method: 'GET',
         headers: {
             "Content-Type": 'application/json; charset=utf-8'
@@ -174,7 +364,40 @@ function clearContent(){
 }
 function loadGameCardView(){
     clearContent();
-    let game = getPlayersGames(playerID);
+
+    let gameCreateBar = document.createElement('div');
+    gameCreateBar.classList.add('level');
+    gameCreateBar.classList.add('p-2');
+    gameCreateBar.classList.add('bg-white');
+    gameCreateBar.style.marginBottom = '0.75rem';
+
+    let gameCreateBarLeft = document.createElement('div');
+    gameCreateBarLeft.classList.add('level-left');
+    let gcbLeftText = document.createElement('div');
+    gcbLeftText.classList.add('level-item');
+    gcbLeftText.classList.add('has-text-centered');
+    gcbLeftText.innerText = "Add Game"
+    gameCreateBarLeft.appendChild(gcbLeftText);
+
+    let gameCreateBarRight = document.createElement('div');
+    gameCreateBarRight.classList.add('level-right');
+    let gcbRightButton = document.createElement('div');
+    gcbRightButton.classList.add('level-item');
+    gcbRightButton.classList.add('button');
+    //gcbRightButton.classList.add('is-outlined');
+    //gcbRightButton.classList.add('is-primary');
+    gcbRightButton.innerHTML = `<span class="icon"><i class="fas fa-plus-square fa-2x"></i></span>`;
+    gcbRightButton.onclick = function() {
+        openAddGame();
+    }
+    //here add icon
+    gameCreateBarRight.appendChild(gcbRightButton);
+
+    gameCreateBar.appendChild(gameCreateBarLeft);
+    gameCreateBar.appendChild(gameCreateBarRight);
+    content.appendChild(gameCreateBar);
+
+    let game = getPlayersGames(playerUsername);
     game.then(games => {
         for(var i = 0; i < games.length; i ++){
         //Wrapper for all the items
@@ -315,6 +538,35 @@ function openGameDetailView(id, date, score, winningTeamID, winningTeamName, win
     let vidSrc = getYouTubeIDFromURL(videoURL);
     vidWrapper.innerHTML = `<iframe id='yt-player' width='100%' height='100%' src='https://www.youtube.com/embed/${vidSrc}?enablejsapi=1&modestbranding=1&autohide=1&showinfo=0&controls=0' frameborder='0'></ifram>`;
     
+    //If user is an admin, want to give more options, edit view is here
+    let editBar = document.createElement('div');
+    editBar.classList.add('level');
+    editBar.classList.add('bg-white');
+    editBar.classList.add('p-2');
+
+    editButton = document.createElement('a');
+    editButton.classList.add('button');
+    editButton.classList.add('level-item');
+    editButton.classList.add('is-medium');
+    editButton.style.border = '0';
+    editButton.innerHTML = `<span class="icon h-red"> <i class="fas fa-edit fa-lg"></i> </span>`;
+    editButton.onclick = function() {
+        openGameEditView(id, date, score, winningTeamID, winningTeamName, winningTeamPlayers, losingTeamID, losingTeamName, losingTeamPlayers, videoURL);
+    }
+
+    statsButton = document.createElement('a');
+    statsButton.classList.add('button');
+    statsButton.classList.add('level-item');
+    statsButton.classList.add('is-medium');
+    statsButton.style.border = '0';
+    statsButton.innerHTML = `<span class="icon h-red"> <i class="fas fa-chart-bar fa-lg"></i> </span>`;
+    statsButton.onclick = function() {
+        openGameEditStatsView(id, date, score, winningTeamID, winningTeamName, winningTeamPlayers, losingTeamID, losingTeamName, losingTeamPlayers, videoURL);
+    }
+
+    editBar.appendChild(editButton);
+    editBar.appendChild(statsButton);
+
     //Video created, now create card with team titles and score
     let titlebar = document.createElement('div');
     titlebar.classList.add('level');
@@ -333,7 +585,8 @@ function openGameDetailView(id, date, score, winningTeamID, winningTeamName, win
 
     var wtp = winningTeamPlayers.split(',');
     for(var i = 0; i < wtp.length; i++){
-        var p = getPlayerByID(parseInt(wtp[i]));
+        console.log(`This many players on winning team: ${wtp.length}`);
+        var p = getPlayerByUsername(wtp[i]);
         p.then(player => {
             console.log(player);
             if(player.success){
@@ -395,7 +648,8 @@ function openGameDetailView(id, date, score, winningTeamID, winningTeamName, win
 
     var ltp = losingTeamPlayers.split(',');
     for(var i = 0; i < ltp.length; i++){
-        var p = getPlayerByID(parseInt(ltp[i]));
+        console.log(`This many players on losing team: ${ltp.length}`);
+        var p = getPlayerByUsername(ltp[i]);
         p.then(player => {
             console.log(player);
             if(player.success){
@@ -536,9 +790,118 @@ function openGameDetailView(id, date, score, winningTeamID, winningTeamName, win
     });
 
     content.appendChild(vidWrapper);
+    content.appendChild(editBar);
     content.appendChild(titlebar);
     content.appendChild(chartWrapper);
 
+}
+function openGameEditView(id, date, score, winningTeamID, winningTeamName, winningTeamPlayers, losingTeamID, losingTeamName, losingTeamPlayers, videoURL){
+    clearContent();
+    let updateFormWrapper = document.createElement('div');
+    updateFormWrapper.classList.add('bg-white');
+    updateFormWrapper.classList.add('mt-2');
+    updateFormWrapper.classList.add('columns');
+    updateFormWrapper.classList.add('is-multiline');
+
+    let dateField = createSimpleFormInColumnSetInputValue("Date", date, "update-date", "Date", "eg. '03/03/2019'");
+    let scoreField = createSimpleFormInColumnSetInputValue("Score", score, "update-score", "Score", "eg. '25-21,25-20,15-10'");
+    let winningTeamIDField = createSimpleFormInColumnSetInputValue("Winning Team ID", winningTeamID, "update-winning-team-id", "Winning Team ID", "eg. '5'");
+    let winningTeamNameField = createSimpleFormInColumnSetInputValue("Winning Team Name", winningTeamName, "update-winning-team-name", "Winning Team Name", "eg. 'Volleyballers'");
+    let winningTeamPlayersField = createSimpleFormInColumnSetInputValue("Winning Team Players", winningTeamPlayers, "update-winning-team-players", "Winning Team Players", "eg. '5,7,8,12,14,51'");
+    let losingTeamIDField = createSimpleFormInColumnSetInputValue("Losing Team ID", losingTeamID, "update-losing-team-id", "Losing Team ID", "eg. '5'");
+    let losingTeamNameField = createSimpleFormInColumnSetInputValue("Losing Team Name", losingTeamName, "update-losing-team-name", "Losing Team Name", "eg. 'Volleyballers'");
+    let losingTeamPlayersField = createSimpleFormInColumnSetInputValue("Losing Team Players", losingTeamPlayers, "update-losing-team-players", "Losing Team Players", "eg. '5,7,8,12,14,51'");
+    let videoURLField = createSimpleFormInColumnSetInputValue("Video URL", videoURL, "update-video-url", "Video URL","eg. https://www.youtube.com/watch?v=adfooOOa");
+
+    let saveButton = document.createElement('a');
+    saveButton.classList.add('button');
+    saveButton.classList.add('is-medium');
+    saveButton.innerHTML = `<span class="icon is-medium"> <i class="fas fa-save"></i> </span>`;
+    saveButton.onclick = function() {
+        console.log('updating');
+        let uDate = document.getElementById('update-date').value;
+        let uScore = document.getElementById('update-score').value;
+        let uWinningTeamID = document.getElementById('update-winning-team-id').value;
+        let uWinningTeamName = document.getElementById('update-winning-team-name').value;
+        let uWinningTeamPlayers = document.getElementById('update-winning-team-players').value;
+        let uLosingTeamID = document.getElementById('update-losing-team-id').value;
+        let uLosingTeamName = document.getElementById('update-losing-team-name').value;
+        let uLosingTeamPlayers = document.getElementById('update-losing-team-players').value;
+        let uVideoURL = document.getElementById('update-video-url').value;
+
+        //Integer values on backend cant be passed in as "", need to change to null if empty string.
+        if(uScore == ""){
+            uScore = null;
+        }
+        if(uWinningTeamID == ""){
+            uWinningTeamID = null;
+        }
+        if(uLosingTeamID == ""){
+            uLosingTeamID = null;
+        }
+
+        let updateTheGame = updateGame(id, uDate, uScore, uWinningTeamID, uWinningTeamName, uWinningTeamPlayers, uLosingTeamID, uLosingTeamName, uLosingTeamPlayers, uVideoURL);
+        updateTheGame.then(response =>{
+            saveButton.classList.add('is-loading');
+            console.log("Updated");
+            openGameDetailView(id, uDate, uScore, uWinningTeamID, uWinningTeamName, uWinningTeamPlayers, uLosingTeamID, uLosingTeamName, uLosingTeamPlayers, uVideoURL);
+        });
+    }
+
+    let cancelButton = document.createElement('a');
+    cancelButton.classList.add('button');
+    cancelButton.classList.add('is-medium');
+    cancelButton.innerHTML = `<span class="icon is-medium"> <i class="fas fa-window-close"></i> </span>`;
+    cancelButton.onclick = function() {
+        openGameDetailView(id, date, score, winningTeamID, winningTeamName, winningTeamPlayers, losingTeamID, losingTeamName, losingTeamPlayers, videoURL);
+    }
+
+    //Append fields
+    updateFormWrapper.appendChild(dateField);
+    updateFormWrapper.appendChild(scoreField);
+    updateFormWrapper.appendChild(winningTeamIDField);
+    updateFormWrapper.appendChild(winningTeamNameField);
+    updateFormWrapper.appendChild(winningTeamPlayersField);
+    updateFormWrapper.appendChild(losingTeamIDField);
+    updateFormWrapper.appendChild(losingTeamNameField);
+    updateFormWrapper.appendChild(losingTeamPlayersField);
+    updateFormWrapper.appendChild(videoURLField);
+    
+    //Append elements to form wrapper
+    content.appendChild(updateFormWrapper);
+    content.appendChild(saveButton);
+    content.appendChild(cancelButton);
+}
+function openGameEditStatsView(id, date, score, winningTeamID, winningTeamName, winningTeamPlayers, losingTeamID, losingTeamName, losingTeamPlayers, videoURL){
+    clearContent();
+
+    let statEditWrapper = document.createElement('div');
+    statEditWrapper.classList.add('p-2');
+    statEditWrapper.classList.add('bg-white');
+
+    let killStats = document.createElement('div');
+    killStats.classList.add('level');
+    killStats.id = 'kill-stats';
+    let statTitle = document.createElement('h2');
+    statTitle.innerText = 'Kills';
+    statTitle.classList.add('title');
+
+    // let killStats = getGameStatsBasedOnType("KILL", id);
+    // killStats.then(stats => {
+    //     for(var i = 0; i < stats.length; i++){
+    //         //create row of stats 
+            
+    //     }
+    // });
+
+
+
+    // let blockStats = getGameStatsBasedOnType("BLOCK", 1);
+    // let killStats = getGameStatsBasedOnType("KILL", 1);
+    // let killStats = getGameStatsBasedOnType("KILL", 1);
+    // let killStats = getGameStatsBasedOnType("KILL", 1);
+    // let killStats = getGameStatsBasedOnType("KILL", 1);
+    
 }
 function onPlayerReady(event) {
     event.target.playVideo();
@@ -603,5 +966,96 @@ function createBarChart(title, labels, data, label){
 
     return wrapper;
 }
-    
+
+function addGame(date, score, winningTeamID, winningTeamName, winningTeamPlayers, losingTeamID, losingTeamName, losingTeamPlayes, videoURL){
+    return new Promise(function(resolve, reject){
+    //Url with initialization params
+    fetch(`${apiHost}/api/game/add`, {
+        method: 'POST',
+        body: JSON.stringify({
+            date: date,
+            score: score,
+            winningTeamID: winningTeamID,
+            winningTeamName: winningTeamName,
+            winningTeamPlayers: winningTeamPlayers,
+            losingTeamID: losingTeamID,
+            losingTeamName: losingTeamName,
+            losingTeamPlayers: losingTeamPlayes,
+            videoURL: videoURL
+        }),
+        headers: {
+            "Content-Type": 'application/json; charset=utf-8'
+        }
+    })
+    .then(response => response.json()) 
+    .then(response => {
+        console.log(response);
+    })
+    .catch(response =>{ 
+        console.log(response);
+    }); 
+    });
+}
+function updateGame(id, date, score, winningTeamID, winningTeamName, winningTeamPlayers, losingTeamID, losingTeamName, losingTeamPlayes, videoURL){
+    //Url with initialization params
+    console.log(`updating with wtp: ${winningTeamPlayers}`);
+    return new Promise(function(resolve, reject){
+    fetch(`${apiHost}/api/game/update`, {
+        method: 'POST',
+        body: JSON.stringify({
+            id: id,
+            date: date,
+            score: score,
+            winningTeamID: winningTeamID,
+            winningTeamName: winningTeamName,
+            winningTeamPlayers: winningTeamPlayers,
+            losingTeamID: losingTeamID,
+            losingTeamName: losingTeamName,
+            losingTeamPlayers: losingTeamPlayes,
+            videoURL: videoURL
+        }),
+        headers: {
+            "Content-Type": 'application/json; charset=utf-8'
+        }
+    })
+    .then(response => {
+        console.log('response 1');
+        response.json()
+    })
+    .then(response => {
+        console.log(response);
+        resolve(response);
+    })
+    .catch(response =>{ 
+        console.log(response);
+        reject(response);
+    });
+    });
+}
+function addStats(gameID, playerID, type, total){
+//Url with initialization params
+return new Promise(function(resolve, reject){
+    fetch(`${apiHost}/api/game/update`, {
+        method: 'POST',
+        body: JSON.stringify({
+            gameID: gameID,
+            playerID: playerID,
+            type: type,
+            total: total
+        }),
+        headers: {
+            "Content-Type": 'application/json; charset=utf-8'
+        }
+    })
+    .then(response => response.json()) 
+    .then(response => {
+        console.log(response);
+        resolve(response);
+    })
+    .catch(response =>{ 
+        console.log(response);
+        reject(response);
+    });
+    });
+}
 
