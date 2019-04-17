@@ -4,8 +4,8 @@ var playerUsername;
 var content;
 var player;
 
-//const apiHost = 'https://volleyballers.herokuapp.com';
-const apiHost = 'http://localhost:8080';
+const apiHost = 'https://volleyballers.herokuapp.com';
+//const apiHost = 'http://localhost:8080';
 
 window.onload = init();
 
@@ -962,17 +962,26 @@ function createBarChart(title, labels, data, label){
         datasets: [
             {
             label: label,
-            backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850","#424242"],
+            backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850","#424242","#7f2524","#e28679","#e2a2b2","#9b9ea5","#fdbc5e"],
             data: data
             }
         ]
         },
         options: {
-        legend: { display: false },
-        title: {
-            display: true,
-            text: title
-        }
+            scales:{
+                yAxes: [
+                    {
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }
+                ]
+            },
+            legend: { display: false },
+            title: {
+                display: true,
+                text: title
+            }
         }
     });
 
